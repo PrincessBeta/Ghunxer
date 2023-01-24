@@ -1,2 +1,2 @@
 # Ghunxer
-a bor for the Hunxer server
+a bot for the Hunxer server
