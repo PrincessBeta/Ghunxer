@@ -30,14 +30,28 @@ async def stop(ctx:interactions.CommandContext) :
 @bot.command(
     name="roll",
     description="rolls dice.",
-    scope=SERVER_ID
+    scope=SERVER_ID,
+    options=[
+        interactions.Option(
+            name="dice",
+            description="usage : <n1>d<n2>",
+            type=interactions.OptionType.STRING,
+            required=True
+        ),interactions.Option(
+            name="bonus",
+            description="an integer",
+            type=interactions.OptionType.INTEGER,
+            required=False
+        ),interactions.Option(
+            name="malus",
+            description="an integer",
+            type=interactions.OptionType.INTEGER,
+            required=False,
+
+        ),
+    ]
 )
-@interactions.option(
-    description="format : <x>d<y>"
-)
-@interactions.option()
-@interactions.option()
-async def roll(ctx,dice: str,bonus: int,malus: int):
+async def roll(ctx,dice: str,bonus: int = 0,malus: int = 0):
     dice = dice
     string = ""
     total = bonus - malus
@@ -45,9 +59,12 @@ async def roll(ctx,dice: str,bonus: int,malus: int):
     n,die = int(n),int(die)
     for i in range(n):
         val = randrange(1,die+1)
-        string += f"({val} )"
+        string += f"[{val}] "
         total += val
-    await ctx.send(f"total = {total} \ndetail : {string} + {bonus} - {malus}")
+    message = f"total = {total} \ndetail : {string}"
+    if bonus : message+=f" + {bonus}"
+    if malus : message+=f" + {malus}"
+    await ctx.send(message)
 
 # def roll_all_dice(string :str):
 #     pattern = re.compile("[0-9]+d[0-9]+")
