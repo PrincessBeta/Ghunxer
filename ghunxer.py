@@ -26,8 +26,6 @@ async def stop(ctx:interactions.CommandContext) :
 #                                Misc Commands                                #
 #-----------------------------------------------------------------------------#
 
-
-
 @bot.command(
     name="roll",
     description="rolls dice.",
@@ -52,7 +50,7 @@ async def stop(ctx:interactions.CommandContext) :
         ),
     ]
 )
-async def roll(ctx,dice: str,bonus: int = 0,malus: int = 0):
+async def roll(ctx:interactions.CommandContext,dice: str,bonus: int = 0,malus: int = 0):
     dice = dice
     string = ""
     total = bonus - malus
@@ -67,6 +65,42 @@ async def roll(ctx,dice: str,bonus: int = 0,malus: int = 0):
     if malus : message+=f" + {malus}"
     await ctx.send(message)
 
+@bot.command(
+    name="test",
+    scope=SERVER_ID
+)
+async def test(ctx:interactions.CommandContext):
+    channel = ctx.channel
+    await channel.send(embeds=interactions.Embed(
+        name="Naruto Character Sheet",
+        description="Owned by <@278291770855522317>",
+        fields=[
+            interactions.EmbedField(name="bank",value="112 shmeckles"),
+            interactions.EmbedField(name="power",value="1500/2"),
+            interactions.EmbedField(name="bank",value="112 shmeckles")
+        ]
+    ))
+    
+@bot.command(
+    name="displaysheet",
+    description="shows a character's sheet",
+    scope=SERVER_ID,
+)
+@interactions.option()
+async def displaysheet(ctx:interactions.context,character : str):
+    with open("characters/"+character+".csv","r") as sheet :
+        stats = sheet.readlines()
+        await ctx.send(embeds=interactions.Embed(
+            title= character+"'s Character Sheet",
+            description= "owned by <@"+stats[0][:-1]+">",
+            fields=[
+                interactions.EmbedField(name="Bank",value=stats[2][:-1]+"ω"),
+                interactions.EmbedField(name="Stats",value = stats[3][:-1]),
+                interactions.EmbedField(name="Puissance",value= stats[4][:-1]),
+                interactions.EmbedField(name="Inventaire",value= "".join(stats[5:])),
+            ]
+        ))
+
 #-----------------------------------------------------------------------------#
 #                              CSV manipulation                               #
 #-----------------------------------------------------------------------------#
@@ -80,15 +114,16 @@ def create_character_sheet(
     inventory:dict={}
     ) :
     with open(f"characters/{name}.csv","x") as sheet :
-        stats_string = " ".join([str(k) for k in stats])
-        sheet.write(name+"\n"+user+"\n"+channel+"\n"+str(bank)+"\n"+stats_string)
+        stats_string = f"Force : {stats[0]}, Agilité : {stats[1]}, Maitrise : {stats[2]}"
+        sheet.write(user+"\n"+channel+"\n"+str(bank)+"\n"+stats_string+"\n"+str(stats[3])+"/"+str(stats[3]))
 
         for item in inventory.keys() :
-            sheet.write("\n"+item + ":" + str(inventory[item]))
+            sheet.write("\n"+ str(inventory[item]) + " * " +item )
         
 
         
-create_character_sheet("naruto","123","321",50,[1,2,3,4],{"saucisse":12,"tomate":14,"amour propre" : 0})
+create_character_sheet("naruto","278291770855522317","1015574682088509480",500,[1,2,3,4],{"saucisse":12,"tomate":14,"amour propre" : 0})
+
 #-----------------------------------------------------------------------------#
 #                             Launching the bot                               #
 #-----------------------------------------------------------------------------#
