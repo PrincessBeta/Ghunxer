@@ -87,7 +87,7 @@ async def test(ctx:interactions.CommandContext):
     scope=SERVER_ID,
 )
 @interactions.option()
-async def displaysheet(ctx:interactions.context,character : str):
+async def displaysheet(ctx:interactions.CommandContext,character : str):
     with open("characters/"+character+".csv","r") as sheet :
         stats = sheet.readlines()
         await ctx.send(embeds=interactions.Embed(
@@ -100,6 +100,29 @@ async def displaysheet(ctx:interactions.context,character : str):
                 interactions.EmbedField(name="Inventaire",value= "".join(stats[5:])),
             ]
         ))
+
+@bot.command(
+    description="adds a charater's sheet to the bot",
+    scope=SERVER_ID,
+    )
+@interactions.option()
+@interactions.option()
+@interactions.option()
+@interactions.option()
+@interactions.option()
+@interactions.option()
+@interactions.option()
+async def addsheet(
+    ctx:interactions.CommandContext,
+    name:str,
+    channel:str,
+    bank:int,
+    strength:int,
+    agility:int,
+    mastery:int,
+    power:int,
+    ):
+    create_character_sheet(name,str(ctx.author.id),channel,bank,[strength,agility,mastery,power])
 
 #-----------------------------------------------------------------------------#
 #                              CSV manipulation                               #
@@ -119,10 +142,6 @@ def create_character_sheet(
 
         for item in inventory.keys() :
             sheet.write("\n"+ str(inventory[item]) + " * " +item )
-        
-
-        
-create_character_sheet("naruto","278291770855522317","1015574682088509480",500,[1,2,3,4],{"saucisse":12,"tomate":14,"amour propre" : 0})
 
 #-----------------------------------------------------------------------------#
 #                             Launching the bot                               #
