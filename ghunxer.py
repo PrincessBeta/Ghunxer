@@ -22,6 +22,8 @@ async def stop(ctx:interactions.CommandContext) :
     await ctx.send("ghunxer died")
     await bot._stop()
 
+
+
 #-----------------------------------------------------------------------------#
 #                                Misc Commands                                #
 #-----------------------------------------------------------------------------#
@@ -90,12 +92,15 @@ async def test(ctx:interactions.CommandContext):
 async def displaysheet(ctx:interactions.CommandContext,character : str):
     with open("characters/"+character+".csv","r") as sheet :
         stats = sheet.readlines()
+        stats[3] = stats[3].split(" ")
+        print(stats[3])
+        statsDisplay = f"Force : {stats[3][0]}\n Agilité : {stats[3][1]}\n Maitrise : {stats[3][2]}"
         await ctx.send(embeds=interactions.Embed(
             title= character+"'s Character Sheet",
             description= "owned by <@"+stats[0][:-1]+">",
             fields=[
-                interactions.EmbedField(name="Bank",value=stats[2][:-1]+"ω"),
-                interactions.EmbedField(name="Stats",value = stats[3][:-1]),
+                interactions.EmbedField(name="Banque",value=stats[2][:-1]+"ω"),
+                interactions.EmbedField(name="Stats",value = statsDisplay),
                 interactions.EmbedField(name="Puissance",value= stats[4][:-1]),
                 interactions.EmbedField(name="Inventaire",value= "".join(stats[5:])),
             ]
@@ -123,7 +128,7 @@ async def addsheet(
     power:int,
     ):
     create_character_sheet(name,str(ctx.author.id),channel,bank,[strength,agility,mastery,power])
-
+    await ctx.send("character successfully created")
 #-----------------------------------------------------------------------------#
 #                              CSV manipulation                               #
 #-----------------------------------------------------------------------------#
@@ -137,11 +142,11 @@ def create_character_sheet(
     inventory:dict={}
     ) :
     with open(f"characters/{name}.csv","x") as sheet :
-        stats_string = f"Force : {stats[0]}, Agilité : {stats[1]}, Maitrise : {stats[2]}"
-        sheet.write(user+"\n"+channel+"\n"+str(bank)+"\n"+stats_string+"\n"+str(stats[3])+"/"+str(stats[3]))
+        stats_string = f"{stats[0]} {stats[1]} {stats[2]}"
+        sheet.write(user+"\n"+channel+"\n"+str(bank)+"\n"+stats_string+"\n"+str(stats[3])+"/"+str(stats[3])+"\n")
 
         for item in inventory.keys() :
-            sheet.write("\n"+ str(inventory[item]) + " * " +item )
+            sheet.write(str(inventory[item]) + " * " +item +"\n")
 
 #-----------------------------------------------------------------------------#
 #                             Launching the bot                               #
