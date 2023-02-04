@@ -1,8 +1,6 @@
 
 import interactions
 from random import randrange
-import csv
-
 
 SERVER_ID = 830127177869426699
 token = ""
@@ -25,7 +23,7 @@ async def stop(ctx:interactions.CommandContext) :
 
 
 #-----------------------------------------------------------------------------#
-#                                Misc Commands                                #
+#                              Discord Commands                               #
 #-----------------------------------------------------------------------------#
 
 @bot.command(
@@ -82,7 +80,9 @@ async def test(ctx:interactions.CommandContext):
             interactions.EmbedField(name="bank",value="112 shmeckles")
         ]
     ))
-    
+
+#-----------------------------Sheet Manipulation------------------------------#
+
 @bot.command(
     name="displaysheet",
     description="shows a character's sheet",
@@ -90,21 +90,20 @@ async def test(ctx:interactions.CommandContext):
 )
 @interactions.option()
 async def displaysheet(ctx:interactions.CommandContext,character : str):
-    with open("characters/"+character+".csv","r") as sheet :
-        stats = sheet.readlines()
-        stats[3] = stats[3].split(" ")
-        print(stats[3])
-        statsDisplay = f"Force : {stats[3][0]}\n Agilité : {stats[3][1]}\n Maitrise : {stats[3][2]}"
-        await ctx.send(embeds=interactions.Embed(
-            title= character+"'s Character Sheet",
-            description= "owned by <@"+stats[0][:-1]+">",
-            fields=[
-                interactions.EmbedField(name="Banque",value=stats[2][:-1]+"ω"),
-                interactions.EmbedField(name="Stats",value = statsDisplay),
-                interactions.EmbedField(name="Puissance",value= stats[4][:-1]),
-                interactions.EmbedField(name="Inventaire",value= "".join(stats[5:])),
-            ]
-        ))
+    sheet = get_sheet(character)
+    stats = sheet.splitlines()
+    stats[3] = stats[3].split(" ")
+    statsDisplay = f"Force : {stats[3][0]}\n Agilité : {stats[3][1]}\n Maitrise : {stats[3][2]}"
+    await ctx.send(embeds=interactions.Embed(
+        title= character+"'s Character Sheet",
+        description= "owned by <@"+stats[0][:-1]+">",
+        fields=[
+            interactions.EmbedField(name="Banque",value=stats[2]+"ω"),
+            interactions.EmbedField(name="Stats",value = statsDisplay),
+            interactions.EmbedField(name="Puissance",value= stats[4]),
+            interactions.EmbedField(name="Inventaire",value= "".join(stats[5:])),
+        ]
+    ))
 
 @bot.command(
     description="adds a charater's sheet to the bot",
@@ -129,8 +128,25 @@ async def addsheet(
     ):
     create_character_sheet(name,str(ctx.author.id),channel,bank,[strength,agility,mastery,power])
     await ctx.send("character successfully created")
+
+@bot.command(
+    name="addmoney",
+    description="adds money to a character's bank.",
+    scope=SERVER_ID
+)
+@interactions.option()
+@interactions.option()
+async def addmoney(ctx:interactions.CommandContext,character : str,amount:int) :
+    sheet = get_sheet(character)
+    lines = sheet.splitlines()
+    lines[2] = str(int(lines[2])+amount)
+    sheet = "\n".join(lines)
+    set_sheet(character,sheet)
+
+
+
 #-----------------------------------------------------------------------------#
-#                              CSV manipulation                               #
+#                             File manipulation                               #
 #-----------------------------------------------------------------------------#
 
 def create_character_sheet(
@@ -140,13 +156,30 @@ def create_character_sheet(
     bank:int,
     stats:list,
     inventory:dict={}
-    ) :
+    ):
+    """
+    creates a character sheet using the provided information, inventory and powers can be empty
+    """
     with open(f"characters/{name}.csv","x") as sheet :
         stats_string = f"{stats[0]} {stats[1]} {stats[2]}"
-        sheet.write(user+"\n"+channel+"\n"+str(bank)+"\n"+stats_string+"\n"+str(stats[3])+"/"+str(stats[3])+"\n")
+        sheet.write(user+"\n"+channel+"\n"+str(bank)+
+            "\n"+stats_string+"\n"+str(stats[3])+"/"+str(stats[3])+"\n")
 
         for item in inventory.keys() :
             sheet.write(str(inventory[item]) + " * " +item +"\n")
+
+def get_sheet(character) -> str:
+    """
+    returns the raw sheet file of the specified character
+    """
+    string = ""
+    with open("characters/"+character+".csv","r") as sheet :
+        string = sheet.read()
+    return string
+
+def set_sheet(character : str,sheet) :
+    with open("characters/"+character+".csv","w") as f :
+        f.write(sheet)
 
 #-----------------------------------------------------------------------------#
 #                             Launching the bot                               #
